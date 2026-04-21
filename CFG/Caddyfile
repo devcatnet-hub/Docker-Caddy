@@ -1,0 +1,47 @@
+# Archivo: Caddyfile
+{
+    # Admin API (solo local)
+    admin localhost:2019
+    
+    # Logs
+    log {
+        output file /var/log/caddy/access.log
+        level INFO
+    }
+}
+
+# Puerto 80 - HTTP
+:80 {
+    # Root directory para archivos estáticos
+    root * /APP/HTML
+    
+    # Logs
+    log {
+        output file /var/log/caddy/access.log
+    }
+    
+    # Compresión
+    encode gzip zstd
+    
+    # Archivos estáticos
+    file_server browse
+    
+    # PHP-FPM (preparado, comentado hasta que instales PHP)
+    # php_fastcgi localhost:9000
+    
+    # Seguridad básica
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}
+
+# Puerto 443 - HTTPS (auto SSL)
+# :443 {
+#     tls email@ejemplo.com
+#     root * /APP/HTML
+#     encode gzip zstd
+#     file_server
+#     # php_fastcgi localhost:9000
+# }

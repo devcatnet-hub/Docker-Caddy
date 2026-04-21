@@ -1,0 +1,55 @@
+version: "3.8"
+services:
+  syncthing:
+    image: deathwalker66/caddy
+    container_name: DEV.Caddy
+    hostname: dev-caddy  # Buena práctica añadir hostname
+    volumes:
+      - type: bind
+        source: ./APP
+        target: /APP
+      - type: bind
+        source: ./SCP
+        target: /SCP
+      - type: bind
+        source: /mnt/Dock/Com
+        target: /COM
+      - type: bind
+        source: ./LOG
+        target: /var/log
+      - type: bind
+        source: ./CFG/Caddyfile
+        target: /etc/caddy/Caddyfile
+    ports:
+      # SSH
+      - target: 22
+        published: 30722
+        protocol: tcp
+        mode: host
+      # HTTP
+      - target: 80
+        published: 30780
+        protocol: tcp
+        mode: host
+      # SSL
+      - target: 443
+        published: 30743
+        protocol: tcp
+        mode: host
+      # WEBSOCKETS
+      - target: 2019
+        published: 30719
+        protocol: tcp
+        mode: host
+    networks:
+      - catnet
+    env_file: 
+      - .env
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true  # Buena práctica para seguridad
+
+networks:
+  catnet:
+    name: catnet
+    external: true
