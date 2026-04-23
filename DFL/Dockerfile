@@ -21,8 +21,15 @@ RUN set -eux ;\
     go get github.com/caddyserver/caddy/v2/modules/caddyhttp/reverseproxy/fastcgi ;\
 ### Make Caddy (Optimizado)
     export PATH=$PATH:/usr/local/go/bin ;\
-    go build -ldflags="-s -w -extldflags '-static'" -o /caddy . ;\
-    strip /caddy  # Reduce el tamaño del binario
+    CGO_ENABLED=0 GOOS=linux go build -a -ldflags="-s -w -extldflags '-static'" -o /caddy . ;\
+    strip /caddy  # Reduce el tamaño del binario 
+
+### UPX Compression Stage
+FROM alpine:latest AS upx-compressor
+RUN apk --no-cache add upx
+COPY --from=builder /caddy /caddy
+RUN upx --best /caddy 
+### UPX Compression Stage
 
 FROM deathwalker66/alpine
 
@@ -33,7 +40,7 @@ ENV CADDY_VERSION=2.7.6
 
 ### COPY
 COPY ./PRC/profile /etc/profile
-COPY --from=builder /caddy /usr/bin/caddy
+COPY --from=upx-compressor /caddy /usr/bin/caddy
 COPY SCP /SCP
 
 ### [ RUN ]
